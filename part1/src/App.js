@@ -1,3 +1,5 @@
+import React, {useState} from 'react'
+
 const Header = (props) => {
   console.log(props)
   return (
@@ -20,9 +22,11 @@ const Part = (props) => {
 const Content = (props) => {
   return (
     <div>
-      <Part partNum={props.parts[0].name} exercise={props.parts[0].exercise} />
-      <Part partNum={props.parts[1].name} exercise={props.parts[1].exercise} />
-      <Part partNum={props.parts[2].name} exercise={props.parts[2].exercise} />
+      {
+        props.parts.map(element => {
+          return <Part partNum={element.name} exercise={element.exercise} />
+        })
+      }
     </div>
   )
 }
@@ -32,7 +36,7 @@ const Total = (props) => {
   props.parts.forEach(element => {
     sum += element.exercise;
   });
-  
+
   return (
     <div>
       <p>
@@ -70,4 +74,44 @@ const App = () => {
   )
 }
 
-export default App
+///////////////////////////////////////////////////////////
+const Display = ({counter}) => <div>{counter}</div>
+
+const Button = ({onClick, text}) => (
+    <button onClick={onClick}>
+      {text}
+    </button>
+)
+
+const App1 = () => {
+  const [ counter, setCounter ] = useState(0)
+
+  const increaseByOne = () => setCounter(counter + 1)
+  const decreaseByOne = () => setCounter(counter - 1)
+  const setToZero = () => setCounter(0)
+
+  setTimeout(
+    () => setCounter(counter + 1),
+    1000
+  )
+
+  return (
+    <div>
+      <Display counter={counter}/>
+      <Button 
+        onClick={decreaseByOne}
+        text="Minus"
+      />
+      <Button 
+        onClick={setToZero}
+        text="Zero"
+      />
+      <Button 
+        onClick={increaseByOne}
+        text="Plus"
+      />
+    </div>
+  )
+}
+
+export default App1

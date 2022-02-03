@@ -52,16 +52,24 @@ const App = (props) => {
         </div>
     )
 }
+//////////////////////////////////////////////////////////////////////////////////////
+const Filter = (props) => {
 
-const App1 = () => {
-    const [persons, setPersons] = useState([
-      { name: 'Arto Hellas', phoneNumber: '232323232'}
-    ]) 
+    const filter = (event) => {
+        event.preventDefault()
+        props.setFilterItem(event.target.value)
+    }
+    return (
+        <div>
+            filter shown with <input value={props.filterItem} onChange={filter}></input>
+        </div>
+    )
+}
 
+const PersonForm = (props) => {
     const [newName, setNewName] = useState('add new person...')
     const [newPhoneNumber, setNewPhoneNumber] = useState('add new phone number...')
-    const [filterItem, setFilterItem] = useState()
-  
+    
     const handleNameChange = (event) => {
         setNewName(event.target.value)
     }
@@ -72,7 +80,7 @@ const App1 = () => {
 
     const addPerson = (event) => {
         event.preventDefault()
-        if  (persons.some(e => e.name === newName)) {
+        if  (props.persons.some(e => e.name === newName)) {
             window.alert(`${newName} is already added to phonebook`);
             
         } else {
@@ -81,25 +89,13 @@ const App1 = () => {
                 phoneNumber: newPhoneNumber,
                 date: new Date().toISOString(),
             }
-            setPersons(persons.concat(personObject))
+            props.setPersons(props.persons.concat(personObject))
             setNewName('')
             setNewPhoneNumber('')
         }
     }
 
-    const filter = (event) => {
-        event.preventDefault()
-
-    }
-    // const people = people.filter(note => note.name === filterItem)
-
-    return (
-      <div>
-        <h2>Phonebook</h2>
-        <div>
-            filter shown with <input value={filterItem} onChange={filter}></input>
-        </div>
-        <h2>Add a New Person</h2>
+    return(
         <form onSubmit={addPerson}>
             <div>
                 name: <input value={newName} onChange={handleNameChange}/>
@@ -109,13 +105,41 @@ const App1 = () => {
             </div>
             <div>
                 <button type="submit">add</button>
-                <button onClick={() => setPersons([])}>clear</button>
+                <button onClick={() => props.setPersons([])}>clear</button>
             </div>
         </form>
+    )
+}
+
+const Persons = (props) => {
+    const people = props.persons.filter(person => person.name.toLowerCase().includes(props.filterItem.toLowerCase()))
+
+    return (
+        <div>
+            {people.map(person => 
+                <Person key={person.name} person={person} />
+            )}
+        </div>
+    )
+}
+const App1 = () => {
+    const [persons, setPersons] = useState([
+        { name: 'Arto Hellas', phoneNumber: '040-123456', id: 1 },
+        { name: 'Ada Lovelace', phoneNumber: '39-44-5323523', id: 2 },
+        { name: 'Dan Abramov', phoneNumber: '12-43-234345', id: 3 },
+        { name: 'Mary Poppendieck', phoneNumber: '39-23-6423122', id: 4 }
+    ])
+    
+    const [filterItem, setFilterItem] = useState('')
+
+    return (
+      <div>
+        <h2>Phonebook</h2>
+        <Filter filterItem={filterItem} setFilterItem={setFilterItem}/>
+        <h2>Add a New Person</h2>
+        <PersonForm persons={persons} setPersons={setPersons}/>
         <h2>Numbers</h2>
-        {persons.map(person => 
-            <Person key={person.name} person={person} />
-        )}
+        <Persons persons={persons} filterItem={filterItem}/>
       </div>
     )
   }

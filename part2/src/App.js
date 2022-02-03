@@ -1,16 +1,28 @@
-import React, {useReducer, useState} from 'react'
+import React, {useReducer, useState, useEffect} from 'react'
 import Note from './components/Note'
 import Person from './components/Person'
+import Country from './components/Country'
 
-const App = (props) => {
+import axios from 'axios'
+import { render } from 'react-dom'
 
-    const [notes, setNotes] = useState(props.notes)
+const App = () => {
 
-    const [newNote, setNewNote] = useState(
-        'a new note...'
-    )
-
+    const [notes, setNotes] = useState([])
+    const [newNote, setNewNote] = useState('')
     const [showAll, setShowAll] = useState(true)
+
+    const hook = () => {
+        console.log('effect')
+        axios
+            .get('http://localhost:3001/notes')
+            .then(response => {
+                console.log('promise fulfilled')
+                setNotes(response.data)
+            })
+    }
+    useEffect(hook,[])
+    console.log('render', notes.length, 'notes')
 
     const addNote = (event) => {
         event.preventDefault()
@@ -32,6 +44,7 @@ const App = (props) => {
     }
 
     const notesToShow = showAll ? notes : notes.filter(note => note.important === true)
+
     return (
         <div>
             <h1>Notes</h1>
@@ -52,6 +65,7 @@ const App = (props) => {
         </div>
     )
 }
+// export default App
 //////////////////////////////////////////////////////////////////////////////////////
 const Filter = (props) => {
 
@@ -123,13 +137,16 @@ const Persons = (props) => {
     )
 }
 const App1 = () => {
-    const [persons, setPersons] = useState([
-        { name: 'Arto Hellas', phoneNumber: '040-123456', id: 1 },
-        { name: 'Ada Lovelace', phoneNumber: '39-44-5323523', id: 2 },
-        { name: 'Dan Abramov', phoneNumber: '12-43-234345', id: 3 },
-        { name: 'Mary Poppendieck', phoneNumber: '39-23-6423122', id: 4 }
-    ])
-    
+    const [persons, setPersons] = useState([])
+
+    const hook = () => {
+        axios
+            .get('http://localhost:3001/persons')
+            .then(response => {
+                setPersons(response.data)
+            })
+    }
+    useEffect(hook, [])
     const [filterItem, setFilterItem] = useState('')
 
     return (
@@ -143,4 +160,95 @@ const App1 = () => {
       </div>
     )
   }
-export default App1
+// export default App1
+////////////////////////////////////////////////////////////////
+//npx json-server --port 3001 --watch db.json
+const CountrySearch = (props) => {
+    const handleCountryChange = (event) => {
+        props.setNewCountry(event.target.value)
+    }
+    return (
+        <div>
+            find countries <input value={props.newCountry} onChange={handleCountryChange}/>
+        </div>
+    )
+}
+
+const Languages = (props) => {
+    const languages = props.languages
+    return (
+        <div>
+            {Object.entries(languages).map(([abbv, language]) =>
+                <li>{language}</li>
+            )}
+        </div>
+    )
+}
+const DisplayCountryInfo = (props) => {
+    const country = props.country
+    const countryName = country["name"]["common"]
+    const capital = country["capital"]
+    const population = country["population"]
+    const languages = country["languages"]
+    const flagURL = country["flags"]["svg"]
+
+    return (
+        <div>
+            <h2>{countryName}</h2>
+            capital: {capital}
+            <br/>
+            population: {population}
+            <h3>Languages</h3>
+            <Languages languages={languages}/>
+            <img src={flagURL}/>
+        </div>
+    )
+}
+const Countries = (props) => {
+    const filteredCountires = props.countries.filter(country => country["name"]["common"].toLowerCase().includes(props.newCountry.toLowerCase()))
+    if (filteredCountires.length === 1) {
+        return (
+            <div>
+                <DisplayCountryInfo country={filteredCountires[0]}/>
+            </div>
+        )
+    } else if (filteredCountires.length <= 10) {
+        return (
+            <div>
+                {filteredCountires.map(country => 
+                    <Country key={country.name} country={country} />
+                )}
+            </div>
+        )
+    } else {
+        return (
+            <div>
+                {"Too many to display"}
+            </div>
+        )
+    }
+}
+
+
+const App2 = () => {
+    const [countries, setCountries] = useState([])
+    const [newCountry, setNewCountry] = useState('')
+
+    const hook = () => {
+        axios
+            .get('https://restcountries.com/v3.1/all')
+            .then(response => {
+                setCountries(response.data)
+                // console.log(response.data[0]['name']['common'])
+            })
+    }
+    useEffect(hook,[])
+    return (
+        <div>
+            <CountrySearch newCountry={newCountry} setNewCountry={setNewCountry}/>
+            <Countries countries={countries} newCountry={newCountry}/>
+        </div>
+    )
+}
+
+export default App2

@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom'
 import App from './App.js'
+import axios from 'axios'
 
 const notes = [
   {
@@ -22,7 +23,24 @@ const notes = [
   }
 ]
 
-ReactDOM.render(
-  <App notes={notes} />,
-  document.getElementById('root')
-)
+// ReactDOM.render(
+//   <App notes={notes} />,
+//   document.getElementById('root')
+// )
+ReactDOM.render(<App />, document.getElementById('root'))
+
+
+///////////////////////////////////////////////////////////////
+// axios
+//   .get('http://localhost:3001/notes')
+//   .then(response => {
+//     const notes = response.data
+//     console.log(notes)
+//   })
+
+// axios
+//   .get("http://localhost:3001/foobar")
+//   .then(response => {
+//     console.log(response)
+//   })
+

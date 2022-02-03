@@ -165,8 +165,10 @@ const App1 = () => {
 //npx json-server --port 3001 --watch db.json
 const CountrySearch = (props) => {
     const handleCountryChange = (event) => {
-        props.setNewCountry(event.target.value)
+        const filteredCountires = props.countries.filter(country => country["name"]["common"].toLowerCase().includes(event.target.value.toLowerCase()))
+        props.setFilteredCountires(filteredCountires)
     }
+
     return (
         <div>
             find countries <input value={props.newCountry} onChange={handleCountryChange}/>
@@ -205,8 +207,18 @@ const DisplayCountryInfo = (props) => {
     )
 }
 const Countries = (props) => {
-    const filteredCountires = props.countries.filter(country => country["name"]["common"].toLowerCase().includes(props.newCountry.toLowerCase()))
-    if (filteredCountires.length === 1) {
+    const filteredCountires = props.filteredCountires
+    const handleCountryChange = (country) => {
+        props.setFilteredCountires([country])
+    }
+
+    if (filteredCountires.length === 0) {
+        return(
+            <div>
+                {"No Countries Found."}
+            </div>
+        )
+    } else if (filteredCountires.length === 1) {
         return (
             <div>
                 <DisplayCountryInfo country={filteredCountires[0]}/>
@@ -216,7 +228,11 @@ const Countries = (props) => {
         return (
             <div>
                 {filteredCountires.map(country => 
-                    <Country key={country.name} country={country} />
+                    <div>
+                        <Country key={country.name} country={country} />
+                        <button onClick={(e)=>handleCountryChange(country)}>Show</button>
+                        {/* <DisplayCountryInfo country={country}/> */}
+                    </div>
                 )}
             </div>
         )
@@ -232,21 +248,22 @@ const Countries = (props) => {
 
 const App2 = () => {
     const [countries, setCountries] = useState([])
-    const [newCountry, setNewCountry] = useState('')
+    const [filteredCountires, setFilteredCountires] = useState([])
 
     const hook = () => {
         axios
             .get('https://restcountries.com/v3.1/all')
             .then(response => {
                 setCountries(response.data)
+                setFilteredCountires(response.data)
                 // console.log(response.data[0]['name']['common'])
             })
     }
     useEffect(hook,[])
     return (
         <div>
-            <CountrySearch newCountry={newCountry} setNewCountry={setNewCountry}/>
-            <Countries countries={countries} newCountry={newCountry}/>
+            <CountrySearch countries={countries} filteredCountires={filteredCountires} setFilteredCountires={setFilteredCountires}/>
+            <Countries filteredCountires={filteredCountires} setFilteredCountires={setFilteredCountires} />
         </div>
     )
 }

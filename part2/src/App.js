@@ -186,6 +186,57 @@ const Languages = (props) => {
         </div>
     )
 }
+
+const Weather = (props) => {
+    const lat = props.latLng[0]
+    const lng = props.latLng[1]
+
+    const api_key = process.env.REACT_APP_OPEN_WEATHER_API_KEY
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${api_key}`
+    const [temperature, setTemperature] = useState(0)
+    const [windSpeed, setWindSpeed] = useState(0)
+    const [windDirection, setWindDirection] = useState('')
+
+    const KelvinToFahrenheit = (temp) => {
+        return(((temp * 1.8) - 459.67))
+    }
+
+    const msToMph = (speed) => {
+        return(speed*2.2369)
+    }
+
+    const degToDirection = (deg) => {
+        var val = Math.round((deg/22.5)+.5)
+        var arr = ["N","NNE","NE","ENE","E","ESE", "SE", "SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"]
+        return(arr[(val % 16)])
+    }
+
+    const hook = () => {
+        axios
+            .get(url)
+            .then(response => {
+                var kelvinTmp = response.data["main"]["temp"]
+                var FahrenheitTmp = KelvinToFahrenheit(kelvinTmp)
+                setTemperature(FahrenheitTmp)
+
+                var msSpeed = response.data["wind"]["speed"]
+                var mphSpeed = msToMph(msSpeed)
+                setWindSpeed(mphSpeed)
+
+                var deg = response.data["wind"]["deg"]
+                var direction = degToDirection(deg)
+                setWindDirection(direction)
+            })
+    }
+    useEffect(hook,[])
+    return(
+        <div>
+            <p><b>Temperature(°F):</b> {temperature.toFixed(2)}</p>
+            <p><b>Wind(mph):</b> {windSpeed.toFixed(2)} mph from {windDirection} </p>
+        </div>
+    )
+}
+
 const DisplayCountryInfo = (props) => {
     const country = props.country
     const countryName = country["name"]["common"]
@@ -193,6 +244,7 @@ const DisplayCountryInfo = (props) => {
     const population = country["population"]
     const languages = country["languages"]
     const flagURL = country["flags"]["svg"]
+    const latLng = country["latlng"]
 
     return (
         <div>
@@ -202,7 +254,9 @@ const DisplayCountryInfo = (props) => {
             population: {population}
             <h3>Languages</h3>
             <Languages languages={languages}/>
-            <img src={flagURL}/>
+            <img src={flagURL} width="400" height="500"/>
+            <h3>Weather in {countryName}</h3>
+            <Weather latLng={latLng}/>
         </div>
     )
 }
@@ -245,7 +299,6 @@ const Countries = (props) => {
     }
 }
 
-
 const App2 = () => {
     const [countries, setCountries] = useState([])
     const [filteredCountires, setFilteredCountires] = useState([])
@@ -260,6 +313,7 @@ const App2 = () => {
             })
     }
     useEffect(hook,[])
+
     return (
         <div>
             <CountrySearch countries={countries} filteredCountires={filteredCountires} setFilteredCountires={setFilteredCountires}/>

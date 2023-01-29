@@ -3,6 +3,7 @@ import Note from './components/Note'
 import Person from './components/Person'
 import Country from './components/Country'
 import noteService from './services/notes'
+import Notification from './components/Notification'
 
 import axios from 'axios'
 import { render } from 'react-dom'
@@ -12,6 +13,7 @@ const App = () => {
     const [notes, setNotes] = useState([])
     const [newNote, setNewNote] = useState('')
     const [showAll, setShowAll] = useState(true)
+    const [errorMessage, setErrorMessage] = useState(null)
 
     useEffect(() => {
         noteService
@@ -26,21 +28,22 @@ const App = () => {
         const changedNote = { ...note, important: !note.important }
 
         noteService
-            .update(id, changedNote)
-            .then(returnedNotes => {
-                setNotes(notes.map(note => note.id !== id ? note: returnedNotes))
+            .update(id, changedNote).then(returnedNote => {
+            setNotes(notes.map(note => note.id !== id ? note : returnedNote))
             })
             .catch(error => {
-                alert(
+                setErrorMessage(
                     `The note ${note.content} was already deleted from server`
                 )
+                setTimeout(() => {
+                    setErrorMessage(null)
+                }, 5000)
                 setNotes(notes.filter(n => n.id != id))
             })
     }
 
     const addNote = (event) => {
         event.preventDefault()
-
         const noteObject = {
             content: newNote,
             date: new Date().toISOString(),
@@ -71,11 +74,12 @@ const App = () => {
     return (
         <div>
             <h1>Notes</h1>
+            <Notification message={errorMessage} />
             <div>
                 <button onClick={() => setShowAll(!showAll)}>
-                    show {showAll ? 'important' : 'all'}
+                show {showAll ? 'important' : 'all' }
                 </button>
-            </div>
+            </div>  
             <ul>
                 {notesToShow.map(note => 
                     <Note 
